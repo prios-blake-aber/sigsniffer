@@ -24,7 +24,7 @@ class PeopleQuery(objects.GraphQlResultSet):
             }
         """
 
-    def transform(self, response):
+    def transform(self, response, **kwargs):
         x = response.get("data", {}).get("v2", {}).get("people", {}).get("edges", {})
         x = [i.get("node") for i in x]
         df = pd.DataFrame.from_records(x)

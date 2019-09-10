@@ -23,7 +23,7 @@ class GraphQlResultSet:
     def query(self) -> str:
         raise NotImplementedError
 
-    def transform(self, response) -> pd.DataFrame:
+    def transform(self, response, **kwargs) -> pd.DataFrame:
         raise NotImplementedError
 
     def execute(self, credentials: SessionInfo, **kwargs):

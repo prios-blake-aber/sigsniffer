@@ -20,7 +20,7 @@ class AttributeQuery(objects.GraphQlResultSet):
             }
         """
 
-    def transform(self, response):
+    def transform(self, response, **kwargs):
         x = response.get("data", {}).get("v2", {}).get("attributes", {})
         df = pd.DataFrame.from_records(x)
         df.columns = ['attributeName', 'attributeId']

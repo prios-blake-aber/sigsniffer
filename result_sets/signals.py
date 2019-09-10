@@ -1,17 +1,21 @@
 
 import json
+import datetime
 import pandas as pd
 from typing import List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-import objects, config
-from result_sets import people, attributes
+import objects
 
 
 def extract_signal(one_signal):
     reformat = dict()
     reformat['signalGeneratorId'] = one_signal.get("signalGeneratorId")
     reformat['createdAt'] = one_signal.get("createdAt")
+    reformat['createdAt'] = datetime.datetime.strptime(
+        reformat['createdAt'][:23],
+        '%Y-%m-%dT%H:%M:%S.%f'
+    )
 
     reformat['personId'] = None
     reformat['attributeId'] = None
@@ -62,7 +66,7 @@ class SignalsQuery(objects.GraphQlResultSet):
         """.format(person_id=self.person_id,
                    signal_generator_ids="\",\"".join(self.signal_generator_ids))
 
-    def transform(self, response):
+    def transform(self, response, **kwargs):
         signals = response.get('data', {}).get('v2', {}).get("signals", {}).get(
             "queryIndex")
 
@@ -70,10 +74,5 @@ class SignalsQuery(objects.GraphQlResultSet):
             return pd.DataFrame()
 
         signal_df = pd.DataFrame.from_records([extract_signal(x) for x in signals])
-        person_df = people.PeopleQuery.execute(config.STAGING)
-        attr_df = attributes.AttributeQuery.execute(config.STAGING)
-
-        signal_df = pd.merge(attr_df, signal_df, how='left', on='attributeId')
-        signal_df = pd.merge(person_df, signal_df, how='left', on='personId')
 
         return signal_df
